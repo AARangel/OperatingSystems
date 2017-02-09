@@ -54,7 +54,7 @@ int main(){
 	}
 	else if(algorithm==1){
 		strcpy(write, "Shortest job first");
-	//shortestJobFirst();
+		shortestJobFirst();
 	}
 	else{
 		strcpy(write,"Round Robin");
@@ -292,7 +292,73 @@ int earliestIn(){
 	}
 	return ret;
 }
-void shortestJobFirst(){}
+void shortestJobFirst(){
+	// printf("SJF called");
+
+	int i, j;
+	int shortestProcess;
+	int processToRun;
+	int idle;
+	int printSelected;
+	int selectionChange;
+
+	j = 0;
+	shortestProcess = 1000000;
+	processToRun = -1;
+	idle = 0;
+	printSelected = 0;
+	selectionChange =0;
+
+	for(i =0; i < timeUnits; i++){
+		printf("Time %d:", i);
+		for(j = 0; j<processCount; j++){
+
+			if(processes[j].arrival == i){
+				printf("Time %d: %s Arrived\n", i, processes[j].name);
+			}
+
+
+
+
+			// printf("Process burst ========%d\n", processes[j].burst);
+
+			//if burst is shorter than previous processes
+				//the process has arrived
+				//process has not completed
+			if(processes[j].burst < shortestProcess && processes[j].arrival <= i && processes[j].burst > -1){
+				if(processes[j].burst < shortestProcess){
+					printSelected = 1;
+				}
+				processToRun = j;
+				shortestProcess = processes[j].burst;
+				// printf("SHORTESTPROCESS = %d", shortestProcess);
+				if(printSelected == 1){
+					printf("%s selected (burst %d)\n", processes[j].name, processes[j].burst);
+					printSelected = 0;
+				}
+				idle = 0;
+			}
+			else{
+				shortestProcess = 100000;
+				idle++;
+			}
+
+
+
+			//run the process
+			if(idle == 0){
+				processes[processToRun].burst--;
+				// printf("Burst reduced to%d\n", processes[processToRun].burst);
+				if(processes[j].burst == 0)
+					printf("Time %d: Process %s finished\n", i, processes[j].name);
+			}
+			else {
+				// printf("Idle\n");
+			}
+		}
+
+	}
+}
 void roundRobin(){}
 int earliestArrival(){}
 
