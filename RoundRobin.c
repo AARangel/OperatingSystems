@@ -79,6 +79,20 @@ int main(){
             waitingLine[head] = -1;
             head++;
 			
+			//printf("\n %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2]); 
+			
+			int Counter = 0; 
+			for(int j = 0; j < processCount; j++)
+				if(waitingLine[Counter] == -1) 
+					Counter++;
+			
+			
+			if(Counter == processCount){
+				printf("Time %d: IDLE\n", i);
+				printf("Finished at time %d\n", i++);  
+				break;
+			}
+			
 			if(i == 14) break; 
         }
 
@@ -110,7 +124,7 @@ int main(){
                 myProcesses[waitingLine[head]].quantumCounter++;
             }
 	} // end of run time
-
+	
 
 	// free the memory
 	free(myProcesses);
