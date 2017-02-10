@@ -10,9 +10,9 @@ int processCount;
 int timeUnits;
 char output[1000]; // output of entire run returned by algorithm call
 
-#ifndef  STRUCTSIZE
 #define STRUCTSIZE 128
-#endif
+#define MAXINT 2147482000
+
 
 void incrementWaitTimes(int running);
 void read(); // assigns algorithm and num processes
@@ -117,6 +117,7 @@ void read(){
 
 	if(ifp == NULL){
 		printf("Problem reading file...");
+		return;
 	}
 
 	i =0 ;
@@ -124,7 +125,8 @@ void read(){
 
 	//each iteration represents parsing of one line of input file
 	while(fgets(line, STRUCTSIZE, ifp) != NULL){
-		//Variables to identify how much of line to copy
+	// while(inputFileLine < 5){
+		// Variables to identify how much of line to copy
 		int processHelper = 0;
 		lineStop = -1;
 		flag =0;
@@ -366,71 +368,58 @@ int earliestIn(){
 	return ret;
 }
 void shortestJobFirst(){
-	// printf("SJF called");
-
-	int i, j;
-	int shortestProcess;
-	int processToRun;
-	int idle;
-	int printSelected;
-	int selectionChange;
+	int i, j, shortestProcess, processToRun, runningProcess;
 
 	j = 0;
-	shortestProcess = 1000000;
+	shortestProcess = MAXINT;
 	processToRun = -1;
-	idle = 0;
-	printSelected = 0;
-	selectionChange =0;
+	runningProcess = MAXINT;
 
 	for(i =0; i < timeUnits; i++){
-		printf("Time %d:", i);
-		for(j = 0; j<processCount; j++){
+		processToRun = MAXINT;
+		shortestProcess = MAXINT;
 
-			if(processes[j].arrival == i){
-				printf("Time %d: %s Arrived\n", i, processes[j].name);
+		for(j = 0; j<processCount; j++){
+			if(processes[j].burst == 0){
+				continue;
 			}
 
-
-
-
-			// printf("Process burst ========%d\n", processes[j].burst);
+			if(processes[j].arrival == i){
+				printf("Time %d: %s arrived\n", i, processes[j].name);
+			}
 
 			//if burst is shorter than previous processes
 				//the process has arrived
 				//process has not completed
 			if(processes[j].burst < shortestProcess && processes[j].arrival <= i && processes[j].burst > -1){
-				if(processes[j].burst < shortestProcess){
-					printSelected = 1;
-				}
 				processToRun = j;
 				shortestProcess = processes[j].burst;
-				// printf("SHORTESTPROCESS = %d", shortestProcess);
-				if(printSelected == 1){
-					printf("%s selected (burst %d)\n", processes[j].name, processes[j].burst);
-					printSelected = 0;
-				}
-				idle = 0;
 			}
-			else{
-				shortestProcess = 100000;
-				idle++;
-			}
-
-
-
-			//run the process
-			if(idle == 0){
-				processes[processToRun].burst--;
-				// printf("Burst reduced to%d\n", processes[processToRun].burst);
-				if(processes[j].burst == 0)
-					printf("Time %d: Process %s finished\n", i, processes[j].name);
-			}
-			else {
-				// printf("Idle\n");
+			else if(processes[j].arrival <= i){
+				//incremect wait time
 			}
 		}
 
+		if(processToRun != MAXINT){
+			processes[processToRun].burst--;
+			//Second burst-- to make burst = 0, process complete
+			if(processes[processToRun].burst == 0){
+				printf("Time %d: %s finished\n", i+1, processes[processToRun].name);
+				processes[processToRun].burst--;
+			}
+		}
+		
+		if(runningProcess != processToRun){
+			if(processToRun ==MAXINT){
+				printf("Time %d: IDLE\n",i);
+				continue;
+			}
+			//+1 burst since already decremented above
+			printf("Time %d: %s selected (burst %d)\n",i,processes[processToRun].name, processes[processToRun].burst+1);
+			runningProcess = processToRun;
+		}
 	}
+	printf("Finished at Time %d\n", i);
 }
 void roundRobin(){}
 
