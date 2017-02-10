@@ -14,6 +14,7 @@ char output[1000]; // output of entire run returned by algorithm call
 #define STRUCTSIZE 128
 #endif
 
+void incrementWaitTimes(int running);
 void read(); // assigns algorithm and num processes
 void firstComeFirstServed();
 void shortestJobFirst();
@@ -24,6 +25,8 @@ int earliestArrival();
 typedef struct process{
 int burst;
 int arrival;
+int wait;
+int turnAround;
 char name[14];
 
 }Processes;
@@ -50,7 +53,8 @@ int main(){
 	printf("%d", algorithm);
 	if(algorithm==0){
 	 	strcpy(write, "First Come First Served");
-		//firstComeFirstServed();
+	 	//printf(" %d %d", timeUnits, processCount);
+		firstComeFirstServed();
 	}
 	else if(algorithm==1){
 		strcpy(write, "Shortest job first");
@@ -62,16 +66,27 @@ int main(){
 	}
 
 
-	fprintf(f,"Using %s", write);
-	if(algorithm==2) fprintf(f,"Quantum %d", quantum);
+	fprintf(f,"Using %s \n", write);
+	if(algorithm==2) fprintf(f,"Quantum %d \n", quantum);
 
 	//BREAKS IF UNCOMMENT, NEEDS FIXING. What is output? should it be out?
 	//strncat(output,'\0',2);
 
 	//strncat(output,'\0',2);
-	fprintf(f,"%s",output);
+	fprintf(f,"%s\n\n\n",output);
+
+
+	int i;
+
+	for(i=0;i<processCount; i++){
+		fprintf(f, "%s wait %d turnAround %d \n", processes[i].name,
+		 processes[i].wait, processes[i].turnAround );
+	}
+
 
 	fclose(f);
+	//free(output);
+	//free(processes);
 
 	return 0;
 	
@@ -93,10 +108,12 @@ void read(){
 	for(i = 0; i <100; i++){
 		 processes[i].burst = 0;
 		 processes[i].arrival = 0;
+		 processes[i].wait=0;
+		 processes[i].turnAround=0;
 	}
 
 	FILE *ifp;
-	ifp = fopen("processes.in","r");
+	ifp = fopen("input.txt","r");
 
 	if(ifp == NULL){
 		printf("Problem reading file...");
@@ -244,55 +261,111 @@ void read(){
 void firstComeFirstServed(){
 // loop through processes until time finished
 int i=0;
-int currentIndex=earliestArrival();
+int done=0;
+//printf("here\n");
+int currentIndex=earliestIn();
 //struct process current=proccesses[earliestArrival()];
+//printf("here %d \n", currentIndex);
 int timeSelected=0;
-while(i<timeUnits){
-	char* msg;
-	int p;
-	for(p=0; p<processCount; p++){
+while(i<=timeUnits){
+	char* msg=(char*)(malloc(sizeof(char)*50));
+	char* msg2=(char*)(malloc(sizeof(char)*50));
+	int p=0;
+	//printf("here1232");
+	//printf("here1232 %d  \n", processCount);
+	while(p<processCount){
 		// a new process has arrived
+		//printf("here1232 %d  \n", processCount);
+		//printf("new process has arrived21232 %d", i);
 		if(processes[p].arrival==i){
-			snprintf(msg,100,"Time %d: %s arrived\n",i, processes[p].name);
+			//printf("new process has arrived %d", i);
+			sprintf(msg,"Time %d: %s arrived\n",i, processes[p].name);
 		}
+
+		p++;
 	}
+	//printf("selecting process ");
+	// no process selected
 	if(i==0){
-		snprintf(msg,100,"Time %d: %s selected (burst %d) \n",i,processes[currentIndex].name,processes[currentIndex].burst);
+		//printf("selecting process ");
+
+		sprintf(msg2,"Time %d: %s selected (burst %d) \n",i,processes[currentIndex].name,processes[currentIndex].burst);
 	}
-	//check for process completed
-	else if(processes[currentIndex].burst== timeSelected){
+	else if(processes[currentIndex].burst== (timeSelected+1)){
+		//printf("here at process completed\n");
 		processes[currentIndex].burst=0;
+		processes[currentIndex].turnAround=i;
 		// pick a new process
 		timeSelected=0;
-		snprintf(msg,100,"Time %d: %s finished  \n",i, processes[currentIndex].name);
+		sprintf(msg,"Time %d: %s finished  \n",i, processes[currentIndex].name);
 		//select new process
-		currentIndex=earliestArrival();
-		snprintf(msg,100,"Time %d: %s selected (burst %d) \n",i,processes[currentIndex].name,processes[currentIndex].burst);
-
-
+		currentIndex=earliestIn();
+		if(currentIndex!=99){
+		sprintf(msg2,"Time %d: %s selected (burst %d) \n",
+			i,processes[currentIndex].name,processes[currentIndex].burst);
 		}
-		else{
-			timeSelected++;
-		}
-		
-		
-		strncat(output,msg,100);
-		i++;
+		//}
+		//else{
+			//printf("idle\n");
+			//done=1;
+		//}
+
 	}
+	// let the process keep running 
+	else{
+		timeSelected++;
+		
+	}
+		incrementWaitTimes(currentIndex);
+			strcat(msg,msg2);
+			strcat(output,msg);
+			
+		
+		
+		i++;
+
+	}
+
+
+	char* msg3=(char*)(malloc(sizeof(char)*50));
+	sprintf(msg3,"finished at time %d\n",timeUnits);
+	strcat(output,msg3);
+	// subract arrival out of waits and turnaround
+	int c;
+	for(c=0; c<processCount;c++){
+		processes[c].wait=processes[c].wait-processes[c].arrival;
+		processes[c].turnAround=processes[c].turnAround-processes[c].arrival;
+	}
+
+
+}
+// increment all wait times except for running
+void incrementWaitTimes(int running){
+	int i;
+	for(i=0;i<processCount; i++ ){
+		if(running!=i && processes[i].burst!=0){
+				processes[i].wait++;
+		}
+	}
+
 }
 int earliestIn(){
 	int i;
-	int ret=0;
+	int ret=99;
 	int earliestArrival=100;
-	for(i=1;i<processCount; i++ ){
-		if(processes[i].arrival<earliestArrival && processes[i].burst!=0){
+	for(i=0;i<processCount; i++ ){
+		//printf("looping through processes\n");
+		if(processes[i].arrival<earliestArrival &&processes[i].burst!=0 ){
+			//printf("earliestArrival %d\n", processes[i].arrival);
 			earliestArrival=processes[i].arrival;
 			ret=i;
 		}
 	}
+
+	printf("lowest address %d\n", ret);
 	return ret;
 }
 void shortestJobFirst(){}
 void roundRobin(){}
-int earliestArrival(){}
+
 
