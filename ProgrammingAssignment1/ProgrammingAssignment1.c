@@ -27,6 +27,8 @@ int burst;
 int arrival;
 int wait;
 int turnAround;
+int selected;
+int quantumCounter;
 char name[14];
 
 }Processes;
@@ -113,10 +115,11 @@ void read(){
 	}
 
 	FILE *ifp;
-	ifp = fopen("input.txt","r");
+	ifp = fopen("processes.in","r");
 
 	if(ifp == NULL){
 		printf("Problem reading file...");
+		return;
 	}
 
 	i =0 ;
@@ -366,6 +369,94 @@ int earliestIn(){
 	return ret;
 }
 void shortestJobFirst(){}
-void roundRobin(){}
+void roundRobin(){
+
+	//circular array
+	int* waitingLine = (int*)malloc(sizeof(int) * processCount);
+	int head =0;
+	int tail =0;
+	int i;
+	int j;
+
+	//set elements in the waitingLine to -1 for not being used
+	for(i = 0; i < processCount; i++){
+		waitingLine[i] = -1;
+	}
+
+	//Start Round Robin
+	for(i = 0; i < timeUnits+1; i++){
+
+        printf("Current iteration -> %d\n", i);
+
+		//Check for new arrivals
+		for(j = 0; j < processCount; j++){
+			if(processes[j].arrival == i){
+
+                if(waitingLine[tail] == -1){
+                    // insert into the current position of tail
+                    waitingLine[tail] = j;
+                    //printf("Current Tail is %d ----> ", tail);
+                    printf("Time %d: %s arrived\n", i, processes[waitingLine[tail]].name);
+                    tail++;
+                    printf("Current Head is %d ---------%d-------> Current Tail is %d\n", head, i, tail);
+                }
+
+                // Current position of the tail is on the first index so nothing can be insert until it is popped of the queue
+                if(tail >= processCount ){
+                    printf("Current Head is %d ---------%d-------> Current Tail is %d\n", head, i, tail);
+                    tail = 0;
+                    printf("Current Head is %d ----------%d------> Current Tail is %d\n", head, i,  tail);
+                }
+			}
+		} // end of arrivals
+
+        if(processes[waitingLine[head]].burst == 0){
+            printf("Time %d: %s finished\n", i, processes[waitingLine[head]].name);
+            waitingLine[head] = -1;
+            head++;
+            printf("**Current Head is %d --------%d-------> Current Tail is %d\n", head,  i, tail);
+        }
+
+        if(processes[waitingLine[head]].quantumCounter == quantum) {
+            //printf("Yes\n");
+            processes[waitingLine[head]].quantumCounter = 0; // set the quantum to -
+            processes[waitingLine[head]].selected = 0; // deselect the current process
+            waitingLine[tail] = waitingLine[head];
+            tail++;
+            waitingLine[head] = -1;
+            head++;
+
+            //printf("--   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", waitingLine[head], myProcesses[waitingLine[head]].name,head, i,  tail);
+
+            if(tail >= processCount){
+                if(head >= processCount) head = 0;
+                tail = 0;
+                //printf("++Current Head is %d ------%d-----------> Current Tail is %d\n", head, i, tail);
+            }
+            else if(head >= processCount){
+                head = 0;
+                //printf("((Current Head is %d --------%d---------> Current Tail is %d\n", head, i, tail);
+            }
+        }
+
+            if(processes[waitingLine[head]].selected == 0){
+                printf("Time %d: %s selected (burst %d)\n", i, processes[waitingLine[head]].name, processes[waitingLine[head]].burst);
+                processes[waitingLine[head]].selected = 1;
+                processes[waitingLine[head]].burst--;
+                processes[waitingLine[head]].quantumCounter++;
+                printf("--   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", waitingLine[head], processes[waitingLine[head]].name,head, i,  tail);
+            }
+            else {
+                processes[waitingLine[head]].burst--;
+                processes[waitingLine[head]].quantumCounter++;
+                printf("++   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", processes[waitingLine[head]].burst, processes[waitingLine[head]].name,head, i,  tail);
+            }
+	} // end of run time
+
+
+	// free the memory
+	//free(myProcesses);
+	//free(waitingLine);
+}
 
 
