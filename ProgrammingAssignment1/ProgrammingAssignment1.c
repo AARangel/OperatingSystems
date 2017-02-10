@@ -10,9 +10,9 @@ int processCount;
 int timeUnits;
 char output[1000]; // output of entire run returned by algorithm call
 
-#ifndef  STRUCTSIZE
 #define STRUCTSIZE 128
-#endif
+#define MAXINT 2147482000
+
 
 void incrementWaitTimes(int running);
 void read(); // assigns algorithm and num processes
@@ -60,7 +60,7 @@ int main(){
 	}
 	else if(algorithm==1){
 		strcpy(write, "Shortest job first");
-	//shortestJobFirst();
+		shortestJobFirst();
 	}
 	else{
 		strcpy(write,"Round Robin");
@@ -368,7 +368,71 @@ int earliestIn(){
 	printf("lowest address %d\n", ret);
 	return ret;
 }
-void shortestJobFirst(){}
+void shortestJobFirst(){
+	int i, j, shortestProcess, processToRun, runningProcess;
+
+	j = 0;
+	shortestProcess = MAXINT;
+	processToRun = -1;
+	runningProcess = MAXINT;
+
+	for(i =0; i < timeUnits; i++){
+		processToRun = MAXINT;
+
+		for(j = 0; j<processCount; j++){
+			if(processes[j].burst == 0){
+				shortestProcess = MAXINT;
+				continue;
+			}
+
+			if(processes[j].arrival == i){
+				printf("Time %d: %s arrived\n", i, processes[j].name);
+			}
+
+			if(processes[j].arrival <= i && processes[j].burst > -1){
+				if(processes[j].burst < shortestProcess){
+					processToRun = j;
+					shortestProcess = processes[j].burst;
+				}
+			}
+		}
+
+		for(j = 0; j<processCount; j++){
+			if(processes[j].burst > shortestProcess && processes[j].arrival <= i && processes[j].burst > -1){
+				processes[j].wait++;
+				processes[j].turnAround++;
+			}
+			else if(processes[j].burst > -1 && processes[j].arrival <= i){
+				processes[j].turnAround++;
+			}
+		}
+
+		if(processToRun != MAXINT){
+			processes[processToRun].burst--;
+			//Second burst-- to make burst = 0, process complete
+			if(processes[processToRun].burst == 0){
+				printf("Time %d: %s finished\n", i+1, processes[processToRun].name);
+				processes[processToRun].burst--;
+				shortestProcess = MAXINT;
+			}
+		}
+		
+		if(runningProcess != processToRun){
+			if(processToRun ==MAXINT){
+				printf("Time %d: IDLE\n",i);
+				continue;
+			}
+			//+1 burst since already decremented above
+			printf("Time %d: %s selected (burst %d)\n",i,processes[processToRun].name, processes[processToRun].burst+1);
+			runningProcess = processToRun;
+		}
+	}
+	printf("Finished at Time %d\n", i);
+
+	for(i = 0; i < processCount; i++){
+		printf("%s Wait Time: %d Turnaround: %d\n", processes[i].name,processes[i].wait, processes[i].turnAround);
+	}
+}
 void roundRobin(){
 
 	//circular array
