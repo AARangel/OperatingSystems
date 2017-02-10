@@ -19,7 +19,7 @@ void enq(struct process* Queue,int processCount, struct process currentProcesses
 
 
 int main(){
-	int processCount = 2;
+	int processCount = 2+1;
 	int runFor = 15;
 	int quantum = 2;
 
@@ -54,57 +54,48 @@ int main(){
 
 	//Start Round Robin
 	for(int i = 0; i < runFor+1; i++){
-
-        printf("Current iteration -> %d\n", i);
-
 		//Check for new arrivals
-		for(int j = 0; j < processCount; j++){
+		for(int j = 0; j < processCount-1; j++){
 			if(myProcesses[j].arrival == i){
 
                 if(waitingLine[tail] == -1){
                     // insert into the current position of tail
-                    waitingLine[tail] = j;
-                    //printf("Current Tail is %d ----> ", tail);
+                    waitingLine[tail] = j;                    
                     printf("Time %d: %s arrived\n", i, myProcesses[waitingLine[tail]].name);
                     tail++;
-                    printf("Current Head is %d ---------%d-------> Current Tail is %d\n", head, i, tail);
                 }
 
                 // Current position of the tail is on the first index so nothing can be insert until it is popped of the queue
                 if(tail >= processCount ){
-                    printf("Current Head is %d ---------%d-------> Current Tail is %d\n", head, i, tail);
                     tail = 0;
-                    printf("Current Head is %d ----------%d------> Current Tail is %d\n", head, i,  tail);
                 }
 			}
 		} // end of arrivals
 
+		//printf("++ -\n %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2]); 
+		
         if(myProcesses[waitingLine[head]].burst == 0){
             printf("Time %d: %s finished\n", i, myProcesses[waitingLine[head]].name);
             waitingLine[head] = -1;
             head++;
-            printf("**Current Head is %d --------%d-------> Current Tail is %d\n", head,  i, tail);
+			
+			if(i == 14) break; 
         }
 
         if(myProcesses[waitingLine[head]].quantumCounter == quantum) {
-            //printf("Yes\n");
             myProcesses[waitingLine[head]].quantumCounter = 0; // set the quantum to -
             myProcesses[waitingLine[head]].selected = 0; // deselect the current process
             waitingLine[tail] = waitingLine[head];
             tail++;
             waitingLine[head] = -1;
             head++;
-
-            //printf("--   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", waitingLine[head], myProcesses[waitingLine[head]].name,head, i,  tail);
-
+			
             if(tail >= processCount){
                 if(head >= processCount) head = 0;
                 tail = 0;
-                //printf("++Current Head is %d ------%d-----------> Current Tail is %d\n", head, i, tail);
-            }
+			}
             else if(head >= processCount){
                 head = 0;
-                //printf("((Current Head is %d --------%d---------> Current Tail is %d\n", head, i, tail);
             }
         }
 
@@ -113,12 +104,10 @@ int main(){
                 myProcesses[waitingLine[head]].selected = 1;
                 myProcesses[waitingLine[head]].burst--;
                 myProcesses[waitingLine[head]].quantumCounter++;
-                printf("--   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", waitingLine[head], myProcesses[waitingLine[head]].name,head, i,  tail);
             }
             else {
                 myProcesses[waitingLine[head]].burst--;
                 myProcesses[waitingLine[head]].quantumCounter++;
-                printf("++   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", myProcesses[waitingLine[head]].burst, myProcesses[waitingLine[head]].name,head, i,  tail);
             }
 	} // end of run time
 
