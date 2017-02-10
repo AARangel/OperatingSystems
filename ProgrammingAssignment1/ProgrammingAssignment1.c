@@ -113,7 +113,7 @@ void read(){
 	}
 
 	FILE *ifp;
-	ifp = fopen("input.txt","r");
+	ifp = fopen("processes.in","r");
 
 	if(ifp == NULL){
 		printf("Problem reading file...");
@@ -377,10 +377,10 @@ void shortestJobFirst(){
 
 	for(i =0; i < timeUnits; i++){
 		processToRun = MAXINT;
-		shortestProcess = MAXINT;
 
 		for(j = 0; j<processCount; j++){
 			if(processes[j].burst == 0){
+				shortestProcess = MAXINT;
 				continue;
 			}
 
@@ -388,15 +388,21 @@ void shortestJobFirst(){
 				printf("Time %d: %s arrived\n", i, processes[j].name);
 			}
 
-			//if burst is shorter than previous processes
-				//the process has arrived
-				//process has not completed
-			if(processes[j].burst < shortestProcess && processes[j].arrival <= i && processes[j].burst > -1){
-				processToRun = j;
-				shortestProcess = processes[j].burst;
+			if(processes[j].arrival <= i && processes[j].burst > -1){
+				if(processes[j].burst < shortestProcess){
+					processToRun = j;
+					shortestProcess = processes[j].burst;
+				}
 			}
-			else if(processes[j].arrival <= i){
-				//incremect wait time
+		}
+
+		for(j = 0; j<processCount; j++){
+			if(processes[j].burst > shortestProcess && processes[j].arrival <= i && processes[j].burst > -1){
+				processes[j].wait++;
+				processes[j].turnAround++;
+			}
+			else if(processes[j].burst > -1 && processes[j].arrival <= i){
+				processes[j].turnAround++;
 			}
 		}
 
@@ -406,6 +412,7 @@ void shortestJobFirst(){
 			if(processes[processToRun].burst == 0){
 				printf("Time %d: %s finished\n", i+1, processes[processToRun].name);
 				processes[processToRun].burst--;
+				shortestProcess = MAXINT;
 			}
 		}
 		
@@ -420,6 +427,10 @@ void shortestJobFirst(){
 		}
 	}
 	printf("Finished at Time %d\n", i);
+
+	for(i = 0; i < processCount; i++){
+		printf("%s Wait Time: %d Turnaround: %d\n", processes[i].name,processes[i].wait, processes[i].turnAround);
+	}
 }
 void roundRobin(){}
 
