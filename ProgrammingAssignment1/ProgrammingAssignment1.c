@@ -14,6 +14,8 @@ char output[1000]; // output of entire run returned by algorithm call
 #define STRUCTSIZE 128
 #endif
 
+int MAXINT=2^31-1;
+
 void incrementWaitTimes(int running);
 void read(); // assigns algorithm and num processes
 void firstComeFirstServed();
@@ -28,6 +30,9 @@ int burst;
 int arrival;
 int wait;
 int turnAround;
+int quantumCounter;
+int selected;
+
 int finished;
 char name[14];
 
@@ -57,34 +62,28 @@ int main(){
 	 	strcpy(write, "First Come First Served");
 	 	//printf(" %d %d", timeUnits, processCount);
 		firstComeFirstServed();
+		fprintf(f,"Using first Come First Served \n");
+			fprintf(f,"%s\n\n\n",output);
+				int i;
+
+		for(i=0;i<processCount; i++){
+			fprintf(f, "%s wait %d turnAround %d \n", processes[i].name,
+		 	processes[i].wait, processes[i].turnAround );
+		}
+
 	}
 	else if(algorithm==1){
-		strcpy(write, "Shortest job first");
-	//shortestJobFirst();
+		shortestJobFirst();
 	}
 	else{
-		strcpy(write,"Round Robin");
-		//roundRobin();
+		roundRobin();
 	}
 
 
-	fprintf(f,"Using %s \n", write);
-	if(algorithm==2) fprintf(f,"Quantum %d \n", quantum);
-
-	//BREAKS IF UNCOMMENT, NEEDS FIXING. What is output? should it be out?
-	//strncat(output,'\0',2);
-
-	//strncat(output,'\0',2);
-	fprintf(f,"%s\n\n\n",output);
 
 
-	int i;
 
-	for(i=0;i<processCount; i++){
-		fprintf(f, "%s wait %d turnAround %d \n", processes[i].name,
-		 processes[i].wait, processes[i].turnAround );
-	}
-
+	
 
 	fclose(f);
 	//free(output);
@@ -113,6 +112,8 @@ void read(){
 		 processes[i].wait=0;
 		 processes[i].turnAround=0;
 		 processes[i].finished=0;
+		 processes[i].selected=0;
+		 processes[i].selected=0;
 	}
 
 	FILE *ifp;
