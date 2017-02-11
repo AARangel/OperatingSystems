@@ -59,12 +59,12 @@ int main(){
 		firstComeFirstServed();
 	}
 	else if(algorithm==1){
-		strcpy(write, "Shortest job first");
+		// strcpy(write, "Shortest job first");
 		shortestJobFirst();
 	}
 	else{
 		strcpy(write,"Round Robin");
-		//roundRobin();
+		roundRobin();
 	}
 
 
@@ -81,8 +81,10 @@ int main(){
 	int i;
 
 	for(i=0;i<processCount; i++){
-		fprintf(f, "%s wait %d turnAround %d \n", processes[i].name,
-		 processes[i].wait, processes[i].turnAround );
+		if(algorithm!=1){
+			fprintf(f, "%s wait %d turnAround %d \n", processes[i].name,
+			 processes[i].wait, processes[i].turnAround );
+		}
 	}
 
 
@@ -253,11 +255,11 @@ void read(){
 	//Use to print out each element in the struct
 
 	for(i = 0; i<4; i++){
-		printf("%dpro%s arrival %d   bursttttt%d   \n",i,processes[i].name, processes[i].arrival, processes[i].burst);
+		// printf("%dpro%s arrival %d   bursttttt%d   \n",i,processes[i].name, processes[i].arrival, processes[i].burst);
 	}
-	printf("timeunits:%d\n", timeUnits);
-	printf("quantum%d\n", quantum);
-	printf("algorithm%d\n", algorithm);
+	// printf("timeunits:%d\n", timeUnits);
+	// printf("quantum%d\n", quantum);
+	// printf("algorithm%d\n", algorithm);
 
 }
 
@@ -371,6 +373,14 @@ int earliestIn(){
 void shortestJobFirst(){
 	int i, j, shortestProcess, processToRun, runningProcess;
 
+	FILE *fileptr = fopen("output.txt", "ab");
+
+	if(fileptr == NULL){
+		printf("outputFile Read Error");
+		return;
+	}
+	fprintf(fileptr, "Shortest Job First (pre)\n\n");
+
 	j = 0;
 	shortestProcess = MAXINT;
 	processToRun = -1;
@@ -386,7 +396,8 @@ void shortestJobFirst(){
 			}
 
 			if(processes[j].arrival == i){
-				printf("Time %d: %s arrived\n", i, processes[j].name);
+				// printf("Time %d: %s arrived\n", i, processes[j].name);
+				fprintf(fileptr, "Time %d: %s arrived\n", i, processes[j].name);
 			}
 
 			if(processes[j].arrival <= i && processes[j].burst > -1){
@@ -411,7 +422,8 @@ void shortestJobFirst(){
 			processes[processToRun].burst--;
 			//Second burst-- to make burst = 0, process complete
 			if(processes[processToRun].burst == 0){
-				printf("Time %d: %s finished\n", i+1, processes[processToRun].name);
+				// printf("Time %d: %s finished\n", i+1, processes[processToRun].name);
+				fprintf(fileptr, "Time %d: %s finished\n", i+1, processes[processToRun].name);
 				processes[processToRun].burst--;
 				shortestProcess = MAXINT;
 			}
@@ -419,18 +431,22 @@ void shortestJobFirst(){
 		
 		if(runningProcess != processToRun){
 			if(processToRun ==MAXINT){
-				printf("Time %d: IDLE\n",i);
+				// printf("Time %d: IDLE\n",i);
+				fprintf(fileptr, "Time %d: IDLE\n",i);
 				continue;
 			}
 			//+1 burst since already decremented above
-			printf("Time %d: %s selected (burst %d)\n",i,processes[processToRun].name, processes[processToRun].burst+1);
+			// printf("Time %d: %s selected (burst %d)\n",i,processes[processToRun].name, processes[processToRun].burst+1);
+			fprintf(fileptr, "Time %d: %s selected (burst %d)\n",i,processes[processToRun].name, processes[processToRun].burst+1);
 			runningProcess = processToRun;
 		}
 	}
 	printf("Finished at Time %d\n", i);
+	fprintf(fileptr, "Finished at Time %d\n\n", i);
 
 	for(i = 0; i < processCount; i++){
-		printf("%s Wait Time: %d Turnaround: %d\n", processes[i].name,processes[i].wait, processes[i].turnAround);
+		// printf("%s Wait %d Turnaround %d\n", processes[i].name,processes[i].wait, processes[i].turnAround);
+		fprintf(fileptr, "%s Wait %d Turnaround %d\n", processes[i].name,processes[i].wait, processes[i].turnAround);
 	}
 }
 void roundRobin(){
@@ -445,7 +461,9 @@ void roundRobin(){
 	//set elements in the waitingLine to -1 for not being used
 	for(i = 0; i < processCount; i++){
 		waitingLine[i] = -1;
-	}
+	printf("%d Processes\n", processCount-1);
+	printf("Using Round-Robin\n");
+	printf("Quantum %d\n\n", quantum);
 
 	//Start Round Robin
 	for(i = 0; i < timeUnits+1; i++){
@@ -474,12 +492,15 @@ void roundRobin(){
 			}
 		} // end of arrivals
 
+
         if(processes[waitingLine[head]].burst == 0){
             printf("Time %d: %s finished\n", i, processes[waitingLine[head]].name);
+            processes[waitingLine[head]].turnAround = i - processes[waitingLine[head]].arrival;
             waitingLine[head] = -1;
             head++;
             printf("**Current Head is %d --------%d-------> Current Tail is %d\n", head,  i, tail);
         }
+        
 
         if(processes[waitingLine[head]].quantumCounter == quantum) {
             //printf("Yes\n");
@@ -489,6 +510,18 @@ void roundRobin(){
             tail++;
             waitingLine[head] = -1;
             head++;
+
+            int Counter = 0; 
+			for(j = 0; j < processCount; j++)
+				if(waitingLine[Counter] == -1) 
+					Counter++;
+			
+			
+			if(Counter == processCount){
+				printf("Time %d: IDLE\n", i);
+				printf("Finished at time %d\n\n", ++i);  
+				break;
+			}
 
             //printf("--   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", waitingLine[head], myProcesses[waitingLine[head]].name,head, i,  tail);
 
@@ -517,10 +550,25 @@ void roundRobin(){
             }
 	} // end of run time
 
+	int x;
+	x = head+1;
+	while(waitingLine[x] != -1){
+		if(x >= processCount)
+			x = 0;
+		if(head == x)
+			break;
+		if(waitingLine[x] != -1){
+			processes[waitingLine[x]].wait++;
+		}
+	}
 
+	for(i = 0; i < processCount-1; i++){
+		printf("%s wait %d turnaround %d\n", processes[i].name, processes[i].wait, processes[i].turnAround);
+	}
 	// free the memory
-	//free(myProcesses);
+	// free(myProcesses);
 	//free(waitingLine);
+}
 }
 
 
