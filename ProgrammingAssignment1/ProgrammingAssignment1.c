@@ -50,26 +50,14 @@ int main(){
 
 
 // write to file
-	fprintf(f,"%d processes \n", processCount);
-	char write[128];
-	printf("%d", algorithm);
+	
+	
 	if(algorithm==0){
-	 	strcpy(write, "First Come First Served");
+		fprintf(f,"%d processes \n", processCount);
 	 	//printf(" %d %d", timeUnits, processCount);
 		firstComeFirstServed();
-	}
-	else if(algorithm==1){
-		// strcpy(write, "Shortest job first");
-		shortestJobFirst();
-	}
-	else{
-		strcpy(write,"Round Robin");
-		roundRobin();
-	}
+			fprintf(f,"Using First Come First Served \n");
 
-
-	fprintf(f,"Using %s \n", write);
-	if(algorithm==2) fprintf(f,"Quantum %d \n", quantum);
 
 	//BREAKS IF UNCOMMENT, NEEDS FIXING. What is output? should it be out?
 	//strncat(output,'\0',2);
@@ -86,6 +74,18 @@ int main(){
 			 processes[i].wait, processes[i].turnAround );
 		}
 	}
+	}
+	else if(algorithm==1){
+		// strcpy(write, "Shortest job first");
+		shortestJobFirst();
+	}
+	else{
+		
+		roundRobin();
+	}
+
+
+
 
 
 	fclose(f);
