@@ -12,6 +12,8 @@ struct process{
 	char name[14];
     int selected;
     int quantumCounter;
+	int turnaround; 
+	int wait;
 };
 
 void printMe(struct process* myProcesses);
@@ -32,15 +34,19 @@ int main(){
 	strcpy(myProcesses[0].name, "P1");
     myProcesses[0].selected = 0;
     myProcesses[0].quantumCounter = 0;
+	myProcesses[0].turnaround = 0;
+	myProcesses[0].wait = 0;
 
 	myProcesses[1].burst = 9;
 	myProcesses[1].arrival = 0;
 	strcpy(myProcesses[1].name, "P2");
     myProcesses[1].selected = 0;
     myProcesses[0].quantumCounter = 0;
+	myProcesses[1].turnaround = 0;
+	myProcesses[1].wait = 0;
 
     // print current processes in array
-	printMe(myProcesses);
+	//printMe(myProcesses);
 
 	//circular array
 	int* waitingLine = (int*)malloc(sizeof(int) * processCount);
@@ -52,6 +58,10 @@ int main(){
 		waitingLine[i] = -1;
 	}
 
+	printf("%d processes\n", processCount-1); 
+	printf("Using Round-Robin\n"); 
+	printf("Quantum %d\n\n", quantum); 
+	
 	//Start Round Robin
 	for(int i = 0; i < runFor+1; i++){
 		//Check for new arrivals
@@ -76,8 +86,23 @@ int main(){
 		
         if(myProcesses[waitingLine[head]].burst == 0){
             printf("Time %d: %s finished\n", i, myProcesses[waitingLine[head]].name);
+			myProcesses[waitingLine[head]].turnaround = i - myProcesses[waitingLine[head]].arrival;
             waitingLine[head] = -1;
             head++;
+			
+			//printf("\n %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2]); 
+			
+			int Counter = 0; 
+			for(int j = 0; j < processCount; j++)
+				if(waitingLine[Counter] == -1) 
+					Counter++;
+			
+			
+			if(Counter == processCount){
+				printf("Time %d: IDLE\n", i);
+				printf("Finished at time %d\n\n", ++i);  
+				break;
+			}
 			
 			if(i == 14) break; 
         }
@@ -99,18 +124,33 @@ int main(){
             }
         }
 
-            if(myProcesses[waitingLine[head]].selected == 0){
-                printf("Time %d: %s selected (burst %d)\n", i, myProcesses[waitingLine[head]].name, myProcesses[waitingLine[head]].burst);
-                myProcesses[waitingLine[head]].selected = 1;
-                myProcesses[waitingLine[head]].burst--;
-                myProcesses[waitingLine[head]].quantumCounter++;
-            }
-            else {
-                myProcesses[waitingLine[head]].burst--;
-                myProcesses[waitingLine[head]].quantumCounter++;
-            }
+		if(myProcesses[waitingLine[head]].selected == 0){
+        	printf("Time %d: %s selected (burst %d)\n", i, myProcesses[waitingLine[head]].name, myProcesses[waitingLine[head]].burst);
+            myProcesses[waitingLine[head]].selected = 1;
+            myProcesses[waitingLine[head]].burst--;
+            myProcesses[waitingLine[head]].quantumCounter++;
+        }
+        else {
+            myProcesses[waitingLine[head]].burst--;
+            myProcesses[waitingLine[head]].quantumCounter++;
+        }
+		
+		// increment the wait time for the processes that are not selected
+		int x = head+1; 
+		while(waitingLine[x] != -1){
+			if(x >= processCount) x = 0; 
+			if(x == head) break; 
+			if( waitingLine[x] != -1){
+				myProcesses[waitingLine[x]].wait++; 
+				x++; 	
+			}
+		}
 	} // end of run time
-
+	
+	for(int i = 0; i < processCount-1; i++){
+		printf("%s wait %d turnaround %d\n", myProcesses[i].name, myProcesses[i].wait, myProcesses[i].turnaround);
+	}
+	
 
 	// free the memory
 	free(myProcesses);
