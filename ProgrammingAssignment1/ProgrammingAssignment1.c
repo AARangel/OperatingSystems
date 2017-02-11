@@ -10,9 +10,9 @@ int processCount;
 int timeUnits;
 char output[1000]; // output of entire run returned by algorithm call
 
+#ifndef  STRUCTSIZE
 #define STRUCTSIZE 128
-#define MAXINT 2147482000
-
+#endif
 
 void incrementWaitTimes(int running);
 void read(); // assigns algorithm and num processes
@@ -21,14 +21,14 @@ void shortestJobFirst();
 void roundRobin();
 int earliestIn();
 int earliestArrival();
+int finished();
 
 typedef struct process{
 int burst;
 int arrival;
 int wait;
 int turnAround;
-int selected;
-int quantumCounter;
+int finished;
 char name[14];
 
 }Processes;
@@ -59,12 +59,12 @@ int main(){
 		firstComeFirstServed();
 	}
 	else if(algorithm==1){
-		// strcpy(write, "Shortest job first");
-		shortestJobFirst();
+		strcpy(write, "Shortest job first");
+	//shortestJobFirst();
 	}
 	else{
 		strcpy(write,"Round Robin");
-		roundRobin();
+		//roundRobin();
 	}
 
 
@@ -81,10 +81,8 @@ int main(){
 	int i;
 
 	for(i=0;i<processCount; i++){
-		if(algorithm!=1){
-			fprintf(f, "%s wait %d turnAround %d \n", processes[i].name,
-			 processes[i].wait, processes[i].turnAround );
-		}
+		fprintf(f, "%s wait %d turnAround %d \n", processes[i].name,
+		 processes[i].wait, processes[i].turnAround );
 	}
 
 
@@ -114,14 +112,14 @@ void read(){
 		 processes[i].arrival = 0;
 		 processes[i].wait=0;
 		 processes[i].turnAround=0;
+		 processes[i].finished=0;
 	}
 
 	FILE *ifp;
-	ifp = fopen("processes.in","r");
+	ifp = fopen("input.txt","r");
 
 	if(ifp == NULL){
 		printf("Problem reading file...");
-		return;
 	}
 
 	i =0 ;
@@ -255,11 +253,11 @@ void read(){
 	//Use to print out each element in the struct
 
 	for(i = 0; i<4; i++){
-		// printf("%dpro%s arrival %d   bursttttt%d   \n",i,processes[i].name, processes[i].arrival, processes[i].burst);
+		printf("%dpro%s arrival %d   bursttttt%d   \n",i,processes[i].name, processes[i].arrival, processes[i].burst);
 	}
-	// printf("timeunits:%d\n", timeUnits);
-	// printf("quantum%d\n", quantum);
-	// printf("algorithm%d\n", algorithm);
+	printf("timeunits:%d\n", timeUnits);
+	printf("quantum%d\n", quantum);
+	printf("algorithm%d\n", algorithm);
 
 }
 
@@ -296,10 +294,16 @@ while(i<=timeUnits){
 
 		sprintf(msg2,"Time %d: %s selected (burst %d) \n",i,processes[currentIndex].name,processes[currentIndex].burst);
 	}
+	else if(finished()){
+		printf("print yeiiiiieiieidiid");
+		sprintf(msg2,"idle\n");
+	}
+	// process yeilds
 	else if(processes[currentIndex].burst== (timeSelected+1)){
 		//printf("here at process completed\n");
 		processes[currentIndex].burst=0;
 		processes[currentIndex].turnAround=i;
+		processes[currentIndex].finished=1;
 		// pick a new process
 		timeSelected=0;
 		sprintf(msg,"Time %d: %s finished  \n",i, processes[currentIndex].name);
@@ -309,11 +313,7 @@ while(i<=timeUnits){
 		sprintf(msg2,"Time %d: %s selected (burst %d) \n",
 			i,processes[currentIndex].name,processes[currentIndex].burst);
 		}
-		//}
-		//else{
-			//printf("idle\n");
-			//done=1;
-		//}
+
 
 	}
 	// let the process keep running 
@@ -354,6 +354,16 @@ void incrementWaitTimes(int running){
 	}
 
 }
+int finished(){
+		int i;
+	for(i=0;i<processCount; i++ ){
+		if(processes[i].finished==0){
+			return 0;
+		}
+	}
+	return 1;
+
+}
 int earliestIn(){
 	int i;
 	int ret=99;
@@ -367,7 +377,7 @@ int earliestIn(){
 		}
 	}
 
-	printf("lowest address %d\n", ret);
+	//printf("lowest address %d\n", ret);
 	return ret;
 }
 void shortestJobFirst(){
