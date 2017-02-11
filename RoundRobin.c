@@ -21,8 +21,8 @@ void enq(struct process* Queue,int processCount, struct process currentProcesses
 
 
 int main(){
-	int processCount = 2+1;
-	int runFor = 15;
+	int processCount = 4+1;
+	int runFor = 30;
 	int quantum = 2;
 
 	// array of struct objects
@@ -30,7 +30,7 @@ int main(){
 
 	// insertting into array of processes
 	myProcesses[0].burst = 5;
-	myProcesses[0].arrival = 3;
+	myProcesses[0].arrival = 0;
 	strcpy(myProcesses[0].name, "P1");
     myProcesses[0].selected = 0;
     myProcesses[0].quantumCounter = 0;
@@ -38,13 +38,29 @@ int main(){
 	myProcesses[0].wait = 0;
 
 	myProcesses[1].burst = 9;
-	myProcesses[1].arrival = 0;
+	myProcesses[1].arrival = 1;
 	strcpy(myProcesses[1].name, "P2");
     myProcesses[1].selected = 0;
-    myProcesses[0].quantumCounter = 0;
+    myProcesses[1].quantumCounter = 0;
 	myProcesses[1].turnaround = 0;
 	myProcesses[1].wait = 0;
 
+	myProcesses[2].burst = 5;
+	myProcesses[2].arrival = 2;
+	strcpy(myProcesses[2].name, "P3");
+    myProcesses[2].selected = 0;
+    myProcesses[2].quantumCounter = 0;
+	myProcesses[2].turnaround = 0;
+	myProcesses[2].wait = 0;
+	
+	myProcesses[3].burst = 9;
+	myProcesses[3].arrival = 3;
+	strcpy(myProcesses[3].name, "P4");
+    myProcesses[3].selected = 0;
+    myProcesses[3].quantumCounter = 0;
+	myProcesses[3].turnaround = 0;
+	myProcesses[3].wait = 0;
+	
     // print current processes in array
 	//printMe(myProcesses);
 
@@ -82,7 +98,7 @@ int main(){
 			}
 		} // end of arrivals
 
-		//printf("++ -\n %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2]); 
+		//printf("\n %d | %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2], waitingLine[3]); 
 		
         if(myProcesses[waitingLine[head]].burst == 0){
             printf("Time %d: %s finished\n", i, myProcesses[waitingLine[head]].name);
@@ -93,9 +109,14 @@ int main(){
 			//printf("\n %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2]); 
 			
 			int Counter = 0; 
-			for(int j = 0; j < processCount; j++)
-				if(waitingLine[Counter] == -1) 
+			for(int j = 0; j < processCount; j++){
+				//printf("%d ++++ %d  head -> %d tail -> %d\n",j, waitingLine[Counter], head, tail); 
+				
+				if(myProcesses[j].burst <= 0)
 					Counter++;
+				//printf("%d | %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2], waitingLine[3]); 
+			}
+			
 			
 			
 			if(Counter == processCount){
@@ -103,14 +124,16 @@ int main(){
 				printf("Finished at time %d\n\n", ++i);  
 				break;
 			}
-			
-			if(i == 14) break; 
+			 
         }
 
+		
         if(myProcesses[waitingLine[head]].quantumCounter == quantum) {
             myProcesses[waitingLine[head]].quantumCounter = 0; // set the quantum to -
             myProcesses[waitingLine[head]].selected = 0; // deselect the current process
+			
             waitingLine[tail] = waitingLine[head];
+			
             tail++;
             waitingLine[head] = -1;
             head++;
@@ -118,12 +141,14 @@ int main(){
             if(tail >= processCount){
                 if(head >= processCount) head = 0;
                 tail = 0;
+				
 			}
             else if(head >= processCount){
                 head = 0;
             }
+			
         }
-
+		
 		if(myProcesses[waitingLine[head]].selected == 0){
         	printf("Time %d: %s selected (burst %d)\n", i, myProcesses[waitingLine[head]].name, myProcesses[waitingLine[head]].burst);
             myProcesses[waitingLine[head]].selected = 1;
@@ -145,12 +170,14 @@ int main(){
 				x++; 	
 			}
 		}
+		
 	} // end of run time
 	
 	for(int i = 0; i < processCount-1; i++){
 		printf("%s wait %d turnaround %d\n", myProcesses[i].name, myProcesses[i].wait, myProcesses[i].turnaround);
 	}
-	
+
+	printf("%s ", myProcesses[waitingLine[1]].name ); 
 
 	// free the memory
 	free(myProcesses);
