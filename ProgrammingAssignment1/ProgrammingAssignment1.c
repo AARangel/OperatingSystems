@@ -211,7 +211,7 @@ void read(){
 			else if(inputFileLine == 3){
 				if(getNextTok == 1){
 					quantum = atoi(p);
-					printf("   quantum%d", quantum);
+					//printf("   quantum%d", quantum);
 					getNextTok = 0;
 				}
 				else if(strcmp(p,"quantum") == 0){
@@ -450,6 +450,8 @@ void shortestJobFirst(){
 	}
 }
 void roundRobin(){
+	
+	FILE *fileptr = fopen("output.txt", "ab");
 
 	//circular array
 	int* waitingLine = (int*)malloc(sizeof(int) * processCount);
@@ -458,115 +460,123 @@ void roundRobin(){
 	int i;
 	int j;
 
+	processCount++; 
+	
+	for(int i = 0; i < processCount; i++){
+		processes[i].wait=0;
+		processes[i].turnAround=0;
+		processes[i].selected=0;
+		processes[i].quantumCounter=0;
+	}
+	
 	//set elements in the waitingLine to -1 for not being used
 	for(i = 0; i < processCount; i++){
 		waitingLine[i] = -1;
-	printf("%d Processes\n", processCount-1);
-	printf("Using Round-Robin\n");
-	printf("Quantum %d\n\n", quantum);
-
+	}
+	
+	fprintf(fileptr, "%d Processes\n", processCount-1);
+	fprintf(fileptr, "Using Round-Robin\n");
+	fprintf(fileptr, "Quantum %d\n\n", quantum);
+	
 	//Start Round Robin
 	for(i = 0; i < timeUnits+1; i++){
-
-        printf("Current iteration -> %d\n", i);
-
-		//Check for new arrivals
-		for(j = 0; j < processCount; j++){
+//Check for new arrivals
+		for(int j = 0; j < processCount-1; j++){
 			if(processes[j].arrival == i){
 
                 if(waitingLine[tail] == -1){
                     // insert into the current position of tail
-                    waitingLine[tail] = j;
-                    //printf("Current Tail is %d ----> ", tail);
-                    printf("Time %d: %s arrived\n", i, processes[waitingLine[tail]].name);
+                    waitingLine[tail] = j;                    
+                    fprintf(fileptr, "Time %d: %s arrived\n", i, processes[waitingLine[tail]].name);
                     tail++;
-                    printf("Current Head is %d ---------%d-------> Current Tail is %d\n", head, i, tail);
                 }
 
                 // Current position of the tail is on the first index so nothing can be insert until it is popped of the queue
                 if(tail >= processCount ){
-                    printf("Current Head is %d ---------%d-------> Current Tail is %d\n", head, i, tail);
                     tail = 0;
-                    printf("Current Head is %d ----------%d------> Current Tail is %d\n", head, i,  tail);
                 }
 			}
 		} // end of arrivals
 
-
+		//printf("\n %d | %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2], waitingLine[3]); 
+		
         if(processes[waitingLine[head]].burst == 0){
-            printf("Time %d: %s finished\n", i, processes[waitingLine[head]].name);
-            processes[waitingLine[head]].turnAround = i - processes[waitingLine[head]].arrival;
+            fprintf(fileptr, "Time %d: %s finished\n", i, processes[waitingLine[head]].name);
+			processes[waitingLine[head]].turnAround = i - processes[waitingLine[head]].arrival;
             waitingLine[head] = -1;
             head++;
-            printf("**Current Head is %d --------%d-------> Current Tail is %d\n", head,  i, tail);
-        }
-        
-
-        if(processes[waitingLine[head]].quantumCounter == quantum) {
-            //printf("Yes\n");
-            processes[waitingLine[head]].quantumCounter = 0; // set the quantum to -
-            processes[waitingLine[head]].selected = 0; // deselect the current process
-            waitingLine[tail] = waitingLine[head];
-            tail++;
-            waitingLine[head] = -1;
-            head++;
-
-            int Counter = 0; 
-			for(j = 0; j < processCount; j++)
-				if(waitingLine[Counter] == -1) 
+			
+			//printf("\n %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2]); 
+			
+			int Counter = 0; 
+			for(int j = 0; j < processCount; j++){
+				//printf("%d ++++ %d  head -> %d tail -> %d\n",j, waitingLine[Counter], head, tail); 
+				
+				if(processes[j].burst <= 0)
 					Counter++;
+				//printf("%d | %d | %d | %d\n\n", waitingLine[0], waitingLine[1], waitingLine[2], waitingLine[3]); 
+			}
+			
 			
 			
 			if(Counter == processCount){
-				printf("Time %d: IDLE\n", i);
-				printf("Finished at time %d\n\n", ++i);  
+				fprintf(fileptr, "Time %d: IDLE\n", i);
+				fprintf(fileptr, "Finished at time %d\n\n", ++i);  
 				break;
 			}
+			 
+        }
 
-            //printf("--   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", waitingLine[head], myProcesses[waitingLine[head]].name,head, i,  tail);
-
+		
+        if(processes[waitingLine[head]].quantumCounter == quantum) {
+            processes[waitingLine[head]].quantumCounter = 0; // set the quantum to -
+            processes[waitingLine[head]].selected = 0; // deselect the current process
+			
+            waitingLine[tail] = waitingLine[head];
+			
+            tail++;
+            waitingLine[head] = -1;
+            head++;
+			
             if(tail >= processCount){
                 if(head >= processCount) head = 0;
                 tail = 0;
-                //printf("++Current Head is %d ------%d-----------> Current Tail is %d\n", head, i, tail);
-            }
+				
+			}
             else if(head >= processCount){
                 head = 0;
-                //printf("((Current Head is %d --------%d---------> Current Tail is %d\n", head, i, tail);
             }
+			
         }
-
-            if(processes[waitingLine[head]].selected == 0){
-                printf("Time %d: %s selected (burst %d)\n", i, processes[waitingLine[head]].name, processes[waitingLine[head]].burst);
-                processes[waitingLine[head]].selected = 1;
-                processes[waitingLine[head]].burst--;
-                processes[waitingLine[head]].quantumCounter++;
-                printf("--   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", waitingLine[head], processes[waitingLine[head]].name,head, i,  tail);
-            }
-            else {
-                processes[waitingLine[head]].burst--;
-                processes[waitingLine[head]].quantumCounter++;
-                printf("++   %d  %s  Current Head is %d --------%d---------> Current Tail is %d\n", processes[waitingLine[head]].burst, processes[waitingLine[head]].name,head, i,  tail);
-            }
-	} // end of run time
-
-	int x;
-	x = head+1;
-	while(waitingLine[x] != -1){
-		if(x >= processCount)
-			x = 0;
-		if(head == x)
-			break;
-		if(waitingLine[x] != -1){
-			processes[waitingLine[x]].wait++;
+		
+		if(processes[waitingLine[head]].selected == 0){
+        	fprintf(fileptr, "Time %d: %s selected (burst %d)\n", i, processes[waitingLine[head]].name, processes[waitingLine[head]].burst);
+            processes[waitingLine[head]].selected = 1;
+            processes[waitingLine[head]].burst--;
+            processes[waitingLine[head]].quantumCounter++;
+        }
+        else {
+            processes[waitingLine[head]].burst--;
+            processes[waitingLine[head]].quantumCounter++;
+        }
+		
+		// increment the wait time for the processes that are not selected
+		int x = head+1; 
+		while(waitingLine[x] != -1){
+			if(x >= processCount) x = 0; 
+			if(x == head) break; 
+			if( waitingLine[x] != -1){
+				processes[waitingLine[x]].wait++; 
+				x++; 	
+			}
 		}
-	}
-
-	for(i = 0; i < processCount-1; i++){
-		printf("%s wait %d turnaround %d\n", processes[i].name, processes[i].wait, processes[i].turnAround);
+		
+	} // end of run time
+	
+	for(int i = 0; i < processCount-1; i++){
+		fprintf(fileptr, "%s wait %d turnaround %d\n", processes[i].name, processes[i].wait, processes[i].turnAround);
 	}
 	// free the memory
 	// free(myProcesses);
 	//free(waitingLine);
-}
 }
