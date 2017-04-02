@@ -5,13 +5,11 @@
 #include <linux/device.h>         
 #include <linux/kernel.h>         
 #include <linux/fs.h>            
-#include <asm/uaccess.h>        
-#define  DEVICE_NAME "ebbchar"    
-#define  CLASS_NAME  "ebb"       
+ 
  
 static int    deviceNumber;                  ///< Stores the device number -- determined automatically
 static char   message[256] = {0};           ///< Memory for the string that is passed from userspace
-static short  size_of_message;              ///< Used to remember the size of the string stored
+static int  size_of_message;              ///< Used to remember the size of the string stored
 static int    numberOpens = 0;              ///< Counts the number of times the device is opened
 static struct class*  deviceClass  = NULL; ///< The device-driver class struct pointer
 static struct device* deviceDriver = NULL; ///< The device-driver device struct pointer
