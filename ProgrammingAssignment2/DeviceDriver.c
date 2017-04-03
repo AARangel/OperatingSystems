@@ -35,11 +35,14 @@ void cleanup_module(void){
 }
 
 static int dev_open(struct inode *inodep, struct file *filep){
+   numberOpens++;
+   printk(KERN_INFO "Device has been opened %d time(s)\n", numberOpens);
+   return 0;
 
 }
 
 static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
-   
+  
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
@@ -47,5 +50,7 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 }
 
 static int dev_release(struct inode *inodep, struct file *filep){
+    printk(KERN_INFO "Device successfully closed\n");
+   return 0;
 
 }
