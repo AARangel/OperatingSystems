@@ -1,3 +1,5 @@
+// see www.tldp.org/LDP/lkmpg/2.6/html/lkmpg.html
+
 #include <linux/init.h>           
 #include <linux/module.h>         
 #include <linux/device.h>         
