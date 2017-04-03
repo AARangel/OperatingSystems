@@ -8,29 +8,21 @@
 #include <linux/kernel.h>         
 #include <linux/fs.h>            
  
- int bufferSize;
+ int bufferSize=1024;
 int    deviceNumber;                  ///< Stores the device number -- determined automatically
-char   message[256] = {0};           ///< Memory for the string that is passed from userspace
-int  size_of_message;              ///< Used to remember the size of the string stored
+int buffer[bufferSize];
 int    numberOpens = 0;              ///< Counts the number of times the device is opened
 struct class*  deviceClass  = NULL; ///< The device-driver class struct pointer
 static struct device* deviceDriver = NULL; ///< The device-driver device struct pointer
  
-// The prototype functions for the character driver -- must come before the struct definition
-int     dev_open(struct inode *, struct file *);
-int     dev_release(struct inode *, struct file *);
-ssize_t dev_read(struct file *, char *, size_t, loff_t *);
-ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
- 
-*/
 
-read back in fifo 
-write - remove from buffer as read back out
- read- store only up to buffer size else print not enough room
-*/
 
-// reguster devic
-e log device number
+//read back in fifo 
+//write - remove from buffer as read back out
+ //read- store only up to buffer size else print not enough room
+
+
+// reguster device log device number
 int init_module( void){
       printk(KERN_INFO " install kernel module")
 }
