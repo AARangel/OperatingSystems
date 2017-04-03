@@ -37,17 +37,13 @@ static int init_Driver(void){
    return 0; 	
 }
 
-/*
+
 void cleanup(void){
    printk(KERN_INFO "Removing Device Module"); 
-   int ret= unregister_chrdev(Major, "Driver Program For OS"); 
-   if(ret<0){
-   		// problem unregistering device
-   		printk(KERN_INFO "problem unregistering device");
-   }
+   unregister_chrdev(Major, "Driver Program For OS"); 
    printk(KERN_INFO "Device Module has been unregistered from Major %d", Major); 
 }
-*/ 
+
 
 static int dev_open(struct inode *inodep, struct file *filep){
 	numOpens++;
@@ -72,4 +68,5 @@ static int dev_release(struct inode *inodep, struct file *filep){
 }
 
 module_init(init_Driver); 
+module_exit(cleanup); 
 
