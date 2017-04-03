@@ -1,8 +1,6 @@
-obj-m+=ebbchar.o
- 
+obj-m+=DeviceDriver.o
+
 all:
- make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) modules
- $(CC) testebbchar.c -o test
+	make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) modules
 clean:
- make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) clean
- rm test:
+	make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) clean

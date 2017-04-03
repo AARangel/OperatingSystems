@@ -12,18 +12,18 @@ static int     dev_release(struct inode *, struct file *);
 static ssize_t dev_read(struct file *, char *, size_t, loff_t *);
 static ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
 
-int Major; 
-int numOpens=0;
+static int Major; 
+static int numOpens=0;
 
 static struct file_operations fops =
 {
-   open = dev_open,
-   read = dev_read,
-   write = dev_write,
-   release = dev_release,
+   .open = dev_open,
+   .read = dev_read,
+   .write = dev_write,
+   .release = dev_release,
 };
 
-static init_module(void){
+static int init_Driver(void){
    printk(KERN_INFO "Device Module has been initialized"); 
    // Register a major number for character device
    Major = register_chrdev(0, "Driver Program For OS", &fops); 
@@ -37,7 +37,8 @@ static init_module(void){
    return 0; 	
 }
 
-void cleanup_module(void){
+/*
+void cleanup(void){
    printk(KERN_INFO "Removing Device Module"); 
    int ret= unregister_chrdev(Major, "Driver Program For OS"); 
    if(ret<0){
@@ -46,6 +47,7 @@ void cleanup_module(void){
    }
    printk(KERN_INFO "Device Module has been unregistered from Major %d", Major); 
 }
+*/ 
 
 static int dev_open(struct inode *inodep, struct file *filep){
 	numOpens++;
@@ -55,16 +57,19 @@ static int dev_open(struct inode *inodep, struct file *filep){
 }
 
 static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
-   
+   return 0; 
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-  
+  return 0; 
 }
 
 static int dev_release(struct inode *inodep, struct file *filep){
-	numberOpens--;
+	numOpens--;
 	//module_put(THIS_MODULE);
 	return 0;
 
 }
+
+module_init(init_Driver); 
+
