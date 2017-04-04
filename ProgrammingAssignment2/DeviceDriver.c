@@ -105,5 +105,5 @@ static int dev_release(struct inode *inodep, struct file *filep){
 }
 
 module_init(init_Driver); 
-//module_exit(cleanup); 
+module_exit(cleanup); 
 
