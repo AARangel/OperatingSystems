@@ -4,14 +4,14 @@
 #include <linux/kernel.h>         
 #include <linux/fs.h> 
 #include <asm/uaccess.h> 
-#define  DEVICE_NAME "DeviceDriver"    ///< The device will appear at /dev/ebbchar using this value
-#define  CLASS_NAME  "Device"        ///< The device class -- this is a character device driver
+#define  DEVICE_NAME "DeviceDriver"    ///< The device will appear here
+#define  CLASS_NAME  "Device"        ///< The device class 
 #define bufferSize 1000
 
-MODULE_LICENSE("GPL");            ///< The license type -- this affects available functionality
-MODULE_AUTHOR("Derek Molloy");    ///< The author -- visible when you use modinfo
-MODULE_DESCRIPTION("A simple Linux char driver for the BBB");  ///< The description -- see modinfo
-MODULE_VERSION("0.1");
+MODULE_LICENSE("GPL");      
+MODULE_AUTHOR("Jack Adolfo Allen");    
+MODULE_DESCRIPTION("Linux device Driver");  
+MODULE_VERSION("1");
 
 // The prototype functions for the character driver -- must come before the struct definition
 static int     dev_open(struct inode *, struct file *);
@@ -90,6 +90,7 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 		printk(KERN_INFO " %d bytes were not read in only have %d bytes available\n", errors, bufferSize);
       		return errors;
 	}
+	buffer="";
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
