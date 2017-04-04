@@ -10,10 +10,10 @@
 #define  CLASS_NAME  "Device"        ///< The device class -- this is a character device driver
 #define bufferSize 1000
 
-MODULE_LICENSE("GPL");            ///< The license type -- this affects available functionality
-MODULE_AUTHOR("Derek Molloy");    ///< The author -- visible when you use modinfo
-MODULE_DESCRIPTION("A simple Linux char driver for the BBB");  ///< The description -- see modinfo
-MODULE_VERSION("0.1");
+//MODULE_LICENSE("GPL");            ///< The license type -- this affects available functionality
+//MODULE_AUTHOR("Derek Molloy");    ///< The author -- visible when you use modinfo
+//MODULE_DESCRIPTION("A simple Linux char driver for the BBB");  ///< The description -- see modinfo
+//MODULE_VERSION("0.1");
 
 // The prototype functions for the character driver -- must come before the struct definition
 static int     dev_open(struct inode *, struct file *);
@@ -48,8 +48,8 @@ static int init_Driver(void){
    }
 
    // register device class and driver
-   ddClass=class_create(THIS_MODULE, CLASS_NAME);
-   ddDevice=device_create(ddClass,NULL, MKDEV(Major,0),NULL, DEVICE_NAME);
+   //ddClass=class_create(THIS_MODULE, CLASS_NAME);
+   //ddDevice=device_create(ddClass,NULL, MKDEV(Major,0),NULL, DEVICE_NAME);
 
    // device registered
    printk(KERN_INFO "Device has been registered at Major %d", Major); 
@@ -60,9 +60,9 @@ static int init_Driver(void){
 
 void cleanup(void){
    printk(KERN_INFO "Removing Device Module"); 
-   device_destroy(ddClass, MKDEV(Major,0));
-   class_unregister(ddClass);
-   class_destroy(ddClass);
+   //device_destroy(ddClass, MKDEV(Major,0));
+   //class_unregister(ddClass);
+   //class_destroy(ddClass);
    unregister_chrdev(Major,DEVICE_NAME); // unregister major number
    printk(KERN_INFO "Device Module has been unregistered from Major %d", Major); 
 }
