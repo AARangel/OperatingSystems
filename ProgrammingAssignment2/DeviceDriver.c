@@ -1,3 +1,4 @@
+
 #include <linux/init.h>           
 #include <linux/module.h>         
 #include <linux/device.h>         
@@ -22,7 +23,6 @@ static ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
 char message[bufferSize];   // string we give to user
 short messageSize;
 static int Major; 
-static int numOpens=0;
 
 static struct class*  ddClass  = NULL; ///< The device-driver class struct pointer
 static struct device* ddDevice = NULL; 
@@ -36,12 +36,12 @@ static struct file_operations fops =
 };
 
 static int init_Driver(void){
-    printk(KERN_INFO "Device Module Initialization"); 
+    printk(KERN_INFO "Device Module Initialization\n"); 
    // Register a major number for character device
    Major = register_chrdev(0, DEVICE_NAME, &fops); 
    if(Major<0){
    	// device registration failed
-   	 printk(KERN_INFO "Device registration failed at Major %d", Major); 
+   	 printk(KERN_INFO "Device registration failed at Major %d\n", Major); 
    	 return Major;
    }
 
@@ -50,26 +50,24 @@ static int init_Driver(void){
    ddDevice=device_create(ddClass,NULL, MKDEV(Major,0),NULL, DEVICE_NAME);
 
    // device registered
-   printk(KERN_INFO "Device has been registered at Major %d", Major); 
+   printk(KERN_INFO "Device has been registered at Major %d\n", Major); 
 
    return 0; 	
 }
 
 
 void cleanup(void){
-   printk(KERN_INFO "Removing Device Module"); 
+   printk(KERN_INFO "Removing Device Module\n"); 
    device_destroy(ddClass, MKDEV(Major,0));
    class_unregister(ddClass);
    class_destroy(ddClass);
    unregister_chrdev(Major,DEVICE_NAME); // unregister major number
-   printk(KERN_INFO "Device Module has been unregistered from Major %d", Major); 
+   printk(KERN_INFO "Device Module has been unregistered from Major %d\n", Major); 
 }
 
 static int dev_open(struct inode *inodep, struct file *filep){
-	numOpens++;
-	printk(KERN_INFO "Device has been opened %d times", numOpens);
+	printk(KERN_INFO "Device has been opened\n");
 	return 0;
-
 }
 
 static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
@@ -78,16 +76,16 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 	
 	errors = 0;
 	bytesRead = 0;
-	 if(len<bufferSize)
-      errors = copy_to_user(buffer, message, len);
-
-   else{
-         errors = copy_to_user(buffer, message, bufferSize);
-   }
+	errors=copy_to_user(buffer,message, bufferSize);
 
 	if(errors==0){
 		// successfully read all the the bits
-		printk(KERN_INFO " Sent %d characters to user\n", bufferSize);
+		
+		if(bufferSize < len)
+			printk(KERN_INFO " Sent %d characters to user\n", bufferSize);
+		else 
+			printk(KERN_INFO " Sent %d characters to user\n", len);
+
       		return 0;
 	}
 	else{
@@ -99,16 +97,14 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-sprintf(message, "%s(%zu letters)", buffer, len);   // appending received string with its length
-  messageSize = strlen(message);                 // store the length of the stored message
-   printk(KERN_INFO "EBBChar: Received %zu characters from the user\n", len);
+   sprintf(message, "%s(%zu letters)", buffer, bufferSize);   
+   printk(KERN_INFO "Device: Received %zu characters from the user\n", len);
    return len;
 }
 
 static int dev_release(struct inode *inodep, struct file *filep){
-	numOpens--;
+	printk(KERN_INFO "Device has been closed\n");
 	return 0;
-
 }
 
 module_init(init_Driver); 

@@ -20,36 +20,24 @@ int main(){
       return errno;
    }
 
-   int value; 
-   printf("0\twrite\n1\tread\n2\texit\n"); 
-   while(1){
-
-	if(1)
-		scanf("%d", &value);
-	switch(value){
-	   case 0: // write
-		printf("Type into Device: ");
-		scanf("%[^\n]%*c", stringToSend);            
-   		ret = write(fd, stringToSend, strlen(stringToSend)); // Send the string to the LKM
-   		if (ret < 0){
-			perror("Failed to write the message to the device.");
-			return errno;
-   		}
-		break;
-	   case 1: 
-		printf("Reading from Device:\n");
-		ret = read(fd, receive, BUFFER_LENGTH);
-		if (ret < 0){
-      			perror("Failed to read the message from the device.");
-			return errno;
-		}
-		printf("%s\n", receive);
-		break; 
-	   case 2: 
-		printf("Program terminating\n");
-		return 0;
-		break;  
-	} 
+   printf("Type into Device: ");
+   scanf("%[^\n]%*c", stringToSend);            
+   ret = write(fd, stringToSend, strlen(stringToSend)); // Send the string to the LKM
+   if (ret < 0){
+	perror("Failed to write the message to the device.");
+	return errno;
    }
+
+   printf("Reading from Device:\n");
+   ret = read(fd, receive, BUFFER_LENGTH);
+   if (ret < 0){
+   	perror("Failed to read the message from the device.");
+	return errno;
+   }
+   printf("%s\n", receive);
+
+   printf("Program terminating\n");
+   return 0;
+	
 
 }
