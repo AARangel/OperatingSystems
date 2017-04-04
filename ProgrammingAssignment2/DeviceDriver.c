@@ -78,7 +78,12 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 	
 	errors = 0;
 	bytesRead = 0;
-	errors=copy_to_user(buffer,message, bufferSize);
+	 if(len<bufferSize)
+      error_count = copy_to_user(buffer, message, len);
+
+   else{
+         error_count = copy_to_user(buffer, message, bufferSize);
+   }
 
 	if(errors==0){
 		// successfully read all the the bits
