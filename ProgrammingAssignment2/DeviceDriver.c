@@ -1,5 +1,3 @@
-// see www.tldp.org/LDP/lkmpg/2.6/html/lkmpg.html
-
 #include <linux/init.h>           
 #include <linux/module.h>         
 #include <linux/device.h>         
@@ -26,8 +24,8 @@ short messageSize;
 static int Major; 
 static int numOpens=0;
 
-static struct class*  ddClass  = NULL; ///< The device-driver class struct pointer
-static struct device* ddDevice = NULL; 
+//static struct class*  ddClass  = NULL; ///< The device-driver class struct pointer
+//static struct device* ddDevice = NULL; 
 
 static struct file_operations fops =
 {
@@ -95,7 +93,10 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-  return 0; 
+sprintf(message, "%s(%zu letters)", buffer, len);   // appending received string with its length
+  messageSize = strlen(message);                 // store the length of the stored message
+   printk(KERN_INFO "EBBChar: Received %zu characters from the user\n", len);
+   return len;
 }
 
 static int dev_release(struct inode *inodep, struct file *filep){
