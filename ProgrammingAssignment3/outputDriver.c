@@ -4,7 +4,7 @@
 #include <linux/device.h>         
 #include <linux/kernel.h>         
 #include <linux/fs.h> 
-#include <linux/mutex.h>
+
 #include <asm/uaccess.h> 
 #define  DEVICE_NAME "OutputDriver"    ///< The device will appear here
 #define  CLASS_NAME  "Output"        ///< The device class 
@@ -15,7 +15,7 @@ MODULE_AUTHOR("Jack Adolfo Allen");
 MODULE_DESCRIPTION("Linux device Driver");  
 MODULE_VERSION("1");
 
-static DEFINE_MUTEX(mutex);
+
 // The prototype functions for the character driver -- must come before the struct definition
 static int     dev_open(struct inode *, struct file *);
 static int     dev_release(struct inode *, struct file *);
@@ -38,15 +38,13 @@ static struct file_operations fops =
 };
 
 static int init_Driver(void){
- mutex_init(&mutex);
 
    return 0; 	
 }
 
 
 void cleanup(void){
-	// destroy mutex
-	mutex_destroy(&mutex);
+	
    printk(KERN_INFO "Removing Device Module\n"); 
    device_destroy(ddClass, MKDEV(Major,0));
    class_unregister(ddClass);
