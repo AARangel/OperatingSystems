@@ -6,6 +6,7 @@
 #include <linux/fs.h> 
 #include <linux/mutex.h>
 #include <asm/uaccess.h> 
+#include "shared.h"
 #define  DEVICE_NAME "InputDriver"    ///< The device will appear here
 #define  CLASS_NAME  "Input"        ///< The device class 
 #define bufferSize 1000
@@ -14,7 +15,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Jack Adolfo Allen");    
 MODULE_DESCRIPTION("Linux device Driver");  
 MODULE_VERSION("1");
-static DEFINE_MUTEX(mutex);
+
 // The prototype functions for the character driver -- must come before the struct definition
 static int     dev_open(struct inode *, struct file *);
 static int     dev_release(struct inode *, struct file *);
@@ -28,13 +29,6 @@ static int Major;
 static struct class*  ddClass  = NULL; ///< The device-driver class struct pointer
 static struct device* ddDevice = NULL; 
 
-static struct file_operations fops =
-{
-   .open = dev_open,
-   .read = dev_read,
-   .write = dev_write,
-   .release = dev_release,
-};
 
 static int init_Driver(void){
 	mutex_init(&mutex);
@@ -78,33 +72,13 @@ static int dev_open(struct inode *inodep, struct file *filep){
 }
 
 static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
-	int errors;
-	int bytesRead;
-	
-	errors = 0;
-	bytesRead = 0;
-	errors=copy_to_user(buffer,message, bufferSize);
 
-	if(errors==0){
-		// successfully read all the the bits
-		
-		if(bufferSize < len)
-			printk(KERN_INFO " Sent %d characters to user\n", bufferSize);
-		else 
-			printk(KERN_INFO " Sent %d characters to user\n", len);
-
-      		return 0;
-	}
-	else{
-		//not all the bits read
-		printk(KERN_INFO " %d bytes were not read in only have %d bytes available\n", errors, bufferSize);
-      		return errors;
-	}
-	buffer="";
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
- 
+  sprintf(message, "%s(%zu letters)", buffer, bufferSize);   
+   printk(KERN_INFO "Device: Received %zu characters from the user\n", len);
+   return len;
 }
 
 static int dev_release(struct inode *inodep, struct file *filep){
