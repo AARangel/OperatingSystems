@@ -23,12 +23,15 @@ char message[bufferSize];   // string we give to user
 short messageSize;
 static int Major; 
 
+ struct file_operations fops =
+{
+   .read=dev_read,
+};
 
 
 
 
-
-static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
+ ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
       int errors;
    int bytesRead;
    
@@ -56,10 +59,4 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 }
 
 
-static int dev_release(struct inode *inodep, struct file *filep){
-	// unlock mutex
-	mutex_unlock(&mutex);
-	printk(KERN_INFO "Device has been closed\n");
-	return 0;
-}
-
+EXPORT_SYMBOL(dev_read);
