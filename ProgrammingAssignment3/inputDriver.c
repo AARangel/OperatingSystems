@@ -6,10 +6,6 @@
 #include <linux/kernel.h>         
 #include <linux/fs.h> 
 #include <linux/mutex.h>
-
-DEFINE_MUTEX(mutex);
-
-
 #include <asm/uaccess.h> 
 #include "shared.h"
 #define  DEVICE_NAME "InputDriver"    ///< The device will appear here
@@ -90,10 +86,7 @@ int dev_release(struct inode *inodep, struct file *filep){
 	return 0;
 }
 // export fcns
-EXPORT_SYMBOL(cleanup);
-EXPORT_SYMBOL(init_Driver);
 EXPORT_SYMBOL(dev_write);
-EXPORT_SYMBOL(dev_open);
 EXPORT_SYMBOL(dev_release);
 
 module_init(init_Driver); 
