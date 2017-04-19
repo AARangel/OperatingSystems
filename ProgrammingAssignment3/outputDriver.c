@@ -18,18 +18,7 @@ MODULE_VERSION("1");
 
 
 
-
-char message[bufferSize];   // string we give to user
-short messageSize;
-static int Major; 
-
- struct file_operations fops =
-{
-   .read=dev_read,
-};
-
-
-
+char message[bufferSize]={0};
 
  ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
       int errors;
