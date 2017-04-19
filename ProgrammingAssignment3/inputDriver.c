@@ -1,10 +1,15 @@
 
+
 #include <linux/init.h>           
 #include <linux/module.h>         
 #include <linux/device.h>         
 #include <linux/kernel.h>         
 #include <linux/fs.h> 
 #include <linux/mutex.h>
+
+DEFINE_MUTEX(mutex);
+
+
 #include <asm/uaccess.h> 
 #include "shared.h"
 #define  DEVICE_NAME "InputDriver"    ///< The device will appear here
@@ -17,11 +22,8 @@ MODULE_DESCRIPTION("Linux device Driver");
 MODULE_VERSION("1");
 
 
-
-char message[bufferSize];   // string we give to user
-short messageSize;
 static int Major; 
-
+char message[bufferSize]={0};
 static struct class*  ddClass  = NULL; ///< The device-driver class struct pointer
 static struct device* ddDevice = NULL; 
 
