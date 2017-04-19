@@ -9,16 +9,26 @@
 static char receive[BUFFER_LENGTH];     ///< The receive buffer from the LKM
  
 int main(){
-   int ret, fd;
+   int ret, fd, fr;
    char stringToSend[BUFFER_LENGTH];
 
    printf("Starting device test code example...\n");
-   fd = open("/dev/DeviceDriver", O_RDWR); 
+
+   fd = open("/dev/InputDriver", O_RDWR); 
+
+   fr = open("/dev/OutputDriver", O_RDWR); 
          
    if (fd < 0){
-      perror("Failed to open the device\n");
+      perror("Failed to open the  input device\n");
       return errno;
    }
+
+   
+   if (fr < 0){
+      perror("Failed to open the output device\n");
+      return errno;
+   }
+
 
    printf("Type into Device: ");
    scanf("%[^\n]%*c", stringToSend);            
@@ -29,7 +39,7 @@ int main(){
    }
 
    printf("Reading from Device:\n");
-   ret = read(fd, receive, BUFFER_LENGTH);
+   ret = read(fr, receive, BUFFER_LENGTH);
    if (ret < 0){
    	perror("Failed to read the message from the device.");
 	return errno;
