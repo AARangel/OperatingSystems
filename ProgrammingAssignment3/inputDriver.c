@@ -18,7 +18,7 @@ MODULE_DESCRIPTION("Linux device Driver");
 MODULE_VERSION("1");
 
 //DEFINE_MUTEX(mutex);
-char message[1000] = "hello Fuck you";
+char message[1000] = {0};
 
 EXPORT_SYMBOL(message);
 //EXPORT_SYMBOL(mutex); 
