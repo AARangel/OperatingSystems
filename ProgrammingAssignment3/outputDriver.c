@@ -4,7 +4,7 @@
 #include <linux/device.h>         
 #include <linux/kernel.h>         
 #include <linux/fs.h> 
-#include "shared.h"
+#include "shared.c"
 
 #include <asm/uaccess.h> 
 #define  DEVICE_NAME "OutputDriver"    ///< The device will appear here
@@ -20,12 +20,15 @@ MODULE_AUTHOR("Jack Adolfo Allen");
 MODULE_DESCRIPTION("Linux device Driver");  
 MODULE_VERSION("1");
 
- struct file_operations fops =
+
+static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset); 
+
+ static struct file_operations fops =
 {
    .read = dev_read,
 };
 
-int init_Driver(void){
+static int init_Driver(void){
 	mutex_init(&mutex);
     printk(KERN_INFO "Device Module Initialization\n"); 
    // Register a major number for character device
@@ -47,7 +50,7 @@ int init_Driver(void){
 }
 
 
-void cleanup(void){
+static void cleanup(void){
 	// destroy mutex
 	mutex_destroy(&mutex);
    printk(KERN_INFO "Removing Device Module\n"); 
@@ -59,12 +62,13 @@ void cleanup(void){
 }
 
 
-char message[bufferSize]={0};
-
- ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
+ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
       int errors;
    int bytesRead;
-   
+   extern char message[];
+
+	printk(KERN_INFO "%s\n", message);
+
    errors = 0;
    bytesRead = 0;
    errors=copy_to_user(buffer,message, bufferSize);
@@ -87,9 +91,6 @@ char message[bufferSize]={0};
    buffer="";
 	
 }
-
-
-EXPORT_SYMBOL(dev_read);
 
 module_init(init_Driver); 
 module_exit(cleanup); 

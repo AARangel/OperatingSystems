@@ -7,7 +7,7 @@
 #include <linux/fs.h> 
 #include <linux/mutex.h>
 #include <asm/uaccess.h> 
-#include "shared.h"
+#include "shared.c"
 #define  DEVICE_NAME "InputDriver"    ///< The device will appear here
 #define  CLASS_NAME  "Input"        ///< The device class 
 #define bufferSize 1000
@@ -17,13 +17,22 @@ MODULE_AUTHOR("Jack Adolfo Allen");
 MODULE_DESCRIPTION("Linux device Driver");  
 MODULE_VERSION("1");
 
+//DEFINE_MUTEX(mutex);
+char message[1000] = "hello Fuck you";
+
+EXPORT_SYMBOL(message);
+//EXPORT_SYMBOL(mutex); 
 
 static int Major; 
-char message[bufferSize]={0};
+//char message[bufferSize]={0};
 static struct class*  ddClass  = NULL; ///< The device-driver class struct pointer
 static struct device* ddDevice = NULL; 
 
- struct file_operations fops =
+static int dev_open(struct inode *inodep, struct file *filep);
+static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset); 
+static int dev_release(struct inode *inodep, struct file *filep);
+
+static struct file_operations fops =
 {
    .open = dev_open,
    .write = dev_write,
@@ -63,7 +72,7 @@ void cleanup(void){
    printk(KERN_INFO "Device Module has been unregistered from Major %d\n", Major); 
 }
 
- int dev_open(struct inode *inodep, struct file *filep){
+ static int dev_open(struct inode *inodep, struct file *filep){
 	if(mutex_trylock(&mutex)){
 		printk(KERN_INFO "Device has been opened\n");
 	}
@@ -73,21 +82,19 @@ void cleanup(void){
 
 
 
-ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-  sprintf(message, "%s(%zu letters)", buffer, bufferSize);   
+static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
+  sprintf(message, "%s(%zu letters)", buffer, bufferSize); 
+	printk(KERN_INFO "%s\n", message);  
    printk(KERN_INFO "Device: Received %zu characters from the user\n", len);
    return len;
 }
 
-int dev_release(struct inode *inodep, struct file *filep){
+static int dev_release(struct inode *inodep, struct file *filep){
 	// unlock mutex
 	mutex_unlock(&mutex);
 	printk(KERN_INFO "Device has been closed\n");
 	return 0;
 }
-// export fcns
-EXPORT_SYMBOL(dev_write);
-EXPORT_SYMBOL(dev_release);
 
 module_init(init_Driver); 
 module_exit(cleanup); 

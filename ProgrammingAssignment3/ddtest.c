@@ -16,18 +16,14 @@ int main(){
 
    fd = open("/dev/InputDriver", O_RDWR); 
 
-   fr = open("/dev/OutputDriver", O_RDWR); 
+   
          
    if (fd < 0){
       perror("Failed to open the  input device\n");
       return errno;
    }
 
-   
-   if (fr < 0){
-      perror("Failed to open the output device\n");
-      return errno;
-   }
+
 
 
    printf("Type into Device: ");
@@ -36,6 +32,13 @@ int main(){
    if (ret < 0){
 	perror("Failed to write the message to the device.");
 	return errno;
+   }
+
+	fr = open("/dev/OutputDriver", O_RDWR); 
+   
+   if (fr < 0){
+      perror("Failed to open the output device\n");
+      return errno;
    }
 
    printf("Reading from Device:\n");
